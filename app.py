@@ -5,7 +5,8 @@ claves = []
 
 
 #expresiones Regulares
-ClavesRE = r'Claves\s*=\s*\[([^\]]*)\]'
+ClavesRE = r'Claves\s*=\s*\['
+ClavesRE2 = r'^\s*\]\s*$'
 ValoresClavesRE = r'"{1}(.*?)",'
 ImprimirRE = r'imprimir\("([^"]*)"\);'
 ImprimirlnRE = r'imprimirln\("([^"]*)"\);'
@@ -17,10 +18,11 @@ def Leer():
 
             imprimir = None
             imprimirLN = None
-            
+            claves = None
 
             imprimir = re.findall(ImprimirRE, linea)
             imprimirLN = re.findall(ImprimirlnRE, linea)
+            claves = re.findall(ClavesRE, linea)
 
             if "'''" in linea or '"""' in linea: 
                 linea = file.readline()
@@ -39,8 +41,20 @@ def Leer():
                 print(imprimirLN[0])
                 linea = file.readline()
                 continue
+            elif claves:
+                linea = file.readline()
+                extraer = re.findall(ValoresClavesRE, linea)
+                if extraer:
+                    print(f"Claves = {extraer}")
+                    linea = file.readline()
+                    extraer = None
+                    extraer = re.findall(ClavesRE2, linea)
+                    if extraer:
+                        linea = file.readline()
+                        continue
+                print("error en claves")
             if linea != "\n":
-                print("\nXX",linea.replace("\n", ""))
+                print("XX",linea.replace("\n", ""))
             linea = file.readline()
 
 def main():
