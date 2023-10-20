@@ -1,15 +1,30 @@
 import re
+from objeto import Objeto
 
 #valore finales leidos del archivo
 claves = []
-
+obj = Objeto()
 
 #expresiones Regulares
 ClavesRE = r'Claves\s*=\s*\['
 ClavesRE2 = r'^\s*\]\s*$'
-ValoresClavesRE = r'"{1}(.*?)",'
+ValoresClavesRE = r'"{1}(.*?)",{0,1}'
+
 ImprimirRE = r'imprimir\("([^"]*)"\);'
 ImprimirlnRE = r'imprimirln\("([^"]*)"\);'
+
+RegistrosRE = r'Registros\s*=\s*\['
+RegistrosRE2 = r'^\s*\]\s*$'
+ValoresRegistrosRE = r'\{([^}]+)\}'
+
+ConteoRE = r'conteo\(\);'
+
+PromedioRE = r'promedio\("([^"]*)"\);'
+
+ContarSiRE = r'contarsi\((.*?)\);'
+ValoresContarSiRE = r'\{([^}]+)\}'
+
+
 
 def Leer():
     with open("prueba_facilita.bizdata", "r") as file:
@@ -19,10 +34,18 @@ def Leer():
             imprimir = None
             imprimirLN = None
             claves = None
+            registro = None
+            conteo = None
+            promedio = None
+            contarsi = None
 
             imprimir = re.findall(ImprimirRE, linea)
             imprimirLN = re.findall(ImprimirlnRE, linea)
             claves = re.findall(ClavesRE, linea)
+            registro = re.findall(RegistrosRE, linea)
+            conteo = re.findall(ConteoRE, linea)
+            promedio = re.findall(PromedioRE, linea)
+            contarsi = re.findall(ContarSiRE, linea)
 
             if "'''" in linea or '"""' in linea: 
                 linea = file.readline()
@@ -33,26 +56,55 @@ def Leer():
                 continue
             elif "#" in linea:
                 linea = file.readline()
+                continue
             elif imprimir:
                 print(str(imprimir[0]).replace("/", "\n"), end="")
                 linea = file.readline()
                 continue
             elif imprimirLN:
-                print(imprimirLN[0])
+                print(imprimirLN[0].replace("/", "\n"))
                 linea = file.readline()
                 continue
             elif claves:
                 linea = file.readline()
                 extraer = re.findall(ValoresClavesRE, linea)
-                if extraer:
-                    print(f"Claves = {extraer}")
+                while extraer:
+                    obj.addClaves(extraer)
                     linea = file.readline()
-                    extraer = None
-                    extraer = re.findall(ClavesRE2, linea)
-                    if extraer:
-                        linea = file.readline()
-                        continue
+                    extraer = re.findall( ValoresClavesRE, linea)
+                extraer = None
+                extraer = re.findall(ClavesRE2, linea)
+                if extraer:
+                    linea = file.readline()
+                    continue
                 print("error en claves")
+            elif registro:
+                linea = file.readline()
+                extraer = re.findall(ValoresRegistrosRE, linea)
+                while extraer:
+                    obj.addRegistros(extraer[0].replace(" ","").replace('"', "").split(","))
+                    linea = file.readline()
+                    extraer = re.findall(ValoresRegistrosRE, linea)
+                extraer = None
+                extraer = re.findall(RegistrosRE2, linea)
+                if extraer:
+                    linea = file.readline()
+                    continue
+                print("error en Registros")
+            elif conteo:
+                print(f"el conteo es: {obj.conteo()}")
+                linea = file.readline()
+                continue
+            elif promedio:
+                print(f"El promedio de {promedio[0]} es: {obj.promedio(promedio[0])}")
+                linea = file.readline()
+                continue
+            elif contarsi:
+                var = contarsi[0].replace(" ","").replace('"', "").split(",")
+                if len(var) == 2:
+                    print(f"El valor de contasi es: {obj.contarsi(var[0], var[1])}")
+                    linea = file.readline()
+                    continue
             if linea != "\n":
                 print("XX",linea.replace("\n", ""))
             linea = file.readline()
