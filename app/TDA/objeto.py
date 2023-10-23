@@ -1,4 +1,3 @@
-
 class Objeto():
     def __init__(self) -> None:
         self.claves = []
@@ -33,16 +32,6 @@ class Objeto():
                 if char == val:
                     contador += 1
         return contador
-    
-    def datos(self):
-        for valor in self.claves:
-            print(f"{valor}".ljust(20), end="")
-        print()
-        for valor in self.registros:
-            for registro in valor:
-                print(f"{registro}".ljust(20), end="")
-            print()
-        print()
     
     def sumar(self, columna):
         list = []
@@ -81,7 +70,7 @@ class Objeto():
             return -1
     
     def reporte(self, titulo):
-        with open("reporte.html", "w") as file:
+        with open("app\\reporte.html", "w") as file:
             file.write("<!DOCTYPE html>\n")
             file.write('<html lang="en">\n')
             file.write("<head>\n")
