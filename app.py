@@ -24,6 +24,16 @@ PromedioRE = r'promedio\("([^"]*)"\);'
 ContarSiRE = r'contarsi\((.*?)\);'
 ValoresContarSiRE = r'\{([^}]+)\}'
 
+DatosRE = r'datos\(\);'
+
+SumarRE = r'sumar\("([^"]*)"\);'
+
+MaxRE = r'max\("([^"]*)"\);'
+
+MinRE = r'min\("([^"]*)"\);'
+
+ReporteRE = r'exportarReporte\("([^"]*)"\);'
+
 
 
 def Leer():
@@ -38,6 +48,11 @@ def Leer():
             conteo = None
             promedio = None
             contarsi = None
+            datos = None
+            sumar = None
+            maxi = None
+            mini = None
+            reporte = None
 
             imprimir = re.findall(ImprimirRE, linea)
             imprimirLN = re.findall(ImprimirlnRE, linea)
@@ -46,6 +61,11 @@ def Leer():
             conteo = re.findall(ConteoRE, linea)
             promedio = re.findall(PromedioRE, linea)
             contarsi = re.findall(ContarSiRE, linea)
+            datos = re.findall(DatosRE, linea)
+            sumar = re.findall(SumarRE, linea)
+            maxi = re.findall(MaxRE, linea)
+            mini = re.findall(MinRE, linea)
+            reporte = re.findall(ReporteRE, linea)
 
             if "'''" in linea or '"""' in linea: 
                 linea = file.readline()
@@ -105,6 +125,26 @@ def Leer():
                     print(f"El valor de contasi es: {obj.contarsi(var[0], var[1])}")
                     linea = file.readline()
                     continue
+            elif datos:
+                obj.datos()
+                linea = file.readline()
+                continue
+            elif sumar:
+                print(obj.sumar(sumar[0]))
+                linea = file.readline()
+                continue
+            elif maxi:
+                print(obj.max(maxi[0]))
+                linea = file.readline()
+                continue
+            elif mini:
+                print(obj.min(mini[0]))
+                linea = file.readline()
+                continue
+            elif reporte:
+                obj.reporte(reporte[0])
+                linea = file.readline()
+                continue
             if linea != "\n":
                 print("XX",linea.replace("\n", ""))
             linea = file.readline()

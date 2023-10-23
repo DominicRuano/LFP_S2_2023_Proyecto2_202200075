@@ -33,3 +33,77 @@ class Objeto():
                 if char == val:
                     contador += 1
         return contador
+    
+    def datos(self):
+        for valor in self.claves:
+            print(f"{valor}".ljust(20), end="")
+        print()
+        for valor in self.registros:
+            for registro in valor:
+                print(f"{registro}".ljust(20), end="")
+            print()
+        print()
+    
+    def sumar(self, columna):
+        list = []
+        index = self.claves.index(columna.lower())
+        try:
+            for fila in self.registros:
+                list.append(float(fila[index]))
+            return sum(list)
+        except:
+            return -1
+    
+    def max(self, columna):
+        num = 0
+        index = self.claves.index(columna.lower())
+        try:
+            for fila in self.registros:
+                if float(fila[index]) > num:
+                    num = float(fila[index])
+            return num
+        except:
+            return -1
+    
+    def min(self, columna):
+        valor = True
+        index = self.claves.index(columna.lower())
+        try:
+            for fila in self.registros:
+                if valor:
+                    num = float(fila[index])
+                    valor = False
+                    continue
+                if float(fila[index]) < num:
+                    num = float(fila[index])
+            return num
+        except:
+            return -1
+    
+    def reporte(self, titulo):
+        with open("reporte.html", "w") as file:
+            file.write("<!DOCTYPE html>\n")
+            file.write('<html lang="en">\n')
+            file.write("<head>\n")
+            file.write('\t<meta charset="UTF-8">\n')
+            file.write('\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n')
+            file.write("\t<title>Reporte</title>\n")
+            file.write("<style> .center-table { margin: 0 auto; width: 70%; } </style>")
+            file.write("</head>\n")
+            file.write("<body>\n")
+            file.write('\t<table class="center-table" border="1">\n')
+            file.write("\t\t<tr>\n")
+            file.write(f'\t\t\t<th colspan="{len(self.claves)}" >{titulo}</th>\n')
+            file.write("\t\t</tr>\n")
+            file.write("\t\t<tr>\n")
+            for valor in self.claves:
+                file.write(f"\t\t\t<th>{valor}</th>\n")
+            file.write("\t\t</tr>\n")
+            for valor in self.registros:
+                file.write("\t\t<tr>\n")
+                for registro in valor:
+                    file.write(f"\t\t\t<th>{registro}</th>\n")
+                file.write("\t\t</tr>\n")
+            file.write("\t</table>\n")
+            file.write("</body>\n")
+            file.write("</html>\n")
