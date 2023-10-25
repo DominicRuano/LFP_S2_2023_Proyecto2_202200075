@@ -4,6 +4,11 @@ class Objeto():
         self.registros = []
         self.errores = []
     
+    def iniciliza(self):
+        self.claves = []
+        self.registros = []
+        self.errores = []
+
     def addClaves(self, args):
         for valor in args:
             self.claves.append(valor.lower())

@@ -49,8 +49,11 @@ MinRE = r'min\("([^"]*)"\);'
 ReporteRE = r'exportarReporte\("([^"]*)"\);'
 
 def Leer(path):
+    obj.iniciliza()
+    guardar()
     contador = 0
     entry2.config(state="normal")
+    entry2.delete(1.0, tk.END)
     with open(path, "r") as file:
         linea = file.readline()
         while linea:
@@ -87,7 +90,7 @@ def Leer(path):
             if "'''" in linea or '"""' in linea: 
                 linea = file.readline()
                 contador += 1
-                while "\'\'\'" not in linea or '"""' in linea:
+                while ("\'\'\'" not in linea or '"""' in linea) and linea != "":
                     linea = file.readline()
                     contador += 1
                     continue
@@ -199,7 +202,6 @@ def errorsintactico(fila, caracter ):
     obj.errores.append(Error(fila, "sintactico", caracter))
 
 
-
 def abrir():
     try:
         global path
@@ -211,6 +213,14 @@ def abrir():
     except:
         messagebox.showerror("Error", "Error al abrir el archivo o se cerro la ventana, intentelo de nuevo")
 
+def guardar():
+    contenido = entry.get("1.0", "end-1c")
+    try:
+        with open(path, "w") as file:
+            file.write(contenido)
+    except:
+        print("se produjo un error al guardar el archivo")
+
 # Funcion que se ejecuta al seleccionar una opcion del combobox
 def ejecutar_funcion(event):
     seleccion = combobx.get()
@@ -218,6 +228,11 @@ def ejecutar_funcion(event):
         abrir()
         button.config(state="normal")
     elif seleccion == "Guardar":
+        try:
+            guardar()
+            messagebox.showinfo("Guardado correcto", "El archivo se guardo correctamente")
+        except:
+            messagebox.showinfo("se produjo un error al guardar el archivo")
         pass
     elif seleccion == "Guardar como":
         pass
