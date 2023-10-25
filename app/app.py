@@ -4,6 +4,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 import re
 from TDA.objeto import Objeto
+from TDA.error import Error
 
 # Constantes que definen el ancho y el alto de la ventana
 WIDTH = 1300  # Ancho
@@ -12,13 +13,26 @@ HEIGHT = 600 # Alto
 path = ""
 
 #valore finales leidos del archivo
-claves = []
+CARACTERES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ''""\",[]{.}1234567890 :(){};=*/#"
+operacionesPermitidas = [
+    "imprimir",
+    "imprimirln",
+    "conteo",
+    "promedio",
+    "contarsi",
+    "datos",
+    "sumar",
+    "max",
+    "min",
+    "exportarReporte"
+    ]
 obj = Objeto()
 
 #expresiones Regulares
 ClavesRE = r'Claves\s*=\s*\['
 ClavesRE2 = r'^\s*\]\s*$'
 ValoresClavesRE = r'"{1}(.*?)",{0,1}'
+ClavesRE3 = r'Claves\s*=\s*\[(.*?)\]'
 ImprimirRE = r'imprimir\("([^"]*)"\);'
 ImprimirlnRE = r'imprimirln\("([^"]*)"\);'
 RegistrosRE = r'Registros\s*=\s*\['
@@ -35,14 +49,17 @@ MinRE = r'min\("([^"]*)"\);'
 ReporteRE = r'exportarReporte\("([^"]*)"\);'
 
 def Leer(path):
+    contador = 0
     entry2.config(state="normal")
     with open(path, "r") as file:
         linea = file.readline()
         while linea:
+            contador += 1
 
             imprimir = None
             imprimirLN = None
             claves = None
+            claves2 = None
             registro = None
             conteo = None
             promedio = None
@@ -55,6 +72,7 @@ def Leer(path):
 
             imprimir = re.findall(ImprimirRE, linea)
             imprimirLN = re.findall(ImprimirlnRE, linea)
+            claves2 = re.findall(ClavesRE3, linea)
             claves = re.findall(ClavesRE, linea)
             registro = re.findall(RegistrosRE, linea)
             conteo = re.findall(ConteoRE, linea)
@@ -68,8 +86,10 @@ def Leer(path):
 
             if "'''" in linea or '"""' in linea: 
                 linea = file.readline()
+                contador += 1
                 while "\'\'\'" not in linea or '"""' in linea:
                     linea = file.readline()
+                    contador += 1
                     continue
                 linea = file.readline()
                 continue
@@ -85,9 +105,14 @@ def Leer(path):
                 entry2.insert(tk.END, f"{valor}\n")
                 linea = file.readline()
                 continue
+            elif claves2:
+                extraer = re.findall(ValoresClavesRE, claves2[0])
+                obj.addClaves(extraer)
+                linea = file.readline()
+                continue
             elif claves:
                 linea = file.readline()
-                extraer = re.findall(ValoresClavesRE, linea)
+                extraer = re.findall( ValoresClavesRE, linea)
                 while extraer:
                     obj.addClaves(extraer)
                     linea = file.readline()
@@ -97,20 +122,20 @@ def Leer(path):
                 if extraer:
                     linea = file.readline()
                     continue
-                print("error en claves")
             elif registro:
                 linea = file.readline()
+                contador += 1
                 extraer = re.findall(ValoresRegistrosRE, linea)
                 while extraer:
                     obj.addRegistros(extraer[0].replace(" ","").replace('"', "").split(","))
                     linea = file.readline()
+                    contador += 1
                     extraer = re.findall(ValoresRegistrosRE, linea)
                 extraer = None
                 extraer = re.findall(RegistrosRE2, linea)
                 if extraer:
                     linea = file.readline()
                     continue
-                print("error en Registros")
             elif conteo:
                 entry2.insert(tk.END, f"{obj.conteo()}\n")
                 linea = file.readline()
@@ -151,20 +176,38 @@ def Leer(path):
                 obj.reporte(reporte[0])
                 linea = file.readline()
                 continue
-            if linea != "\n":
-                print("XX",linea.replace("\n", ""))
+            if linea[0] != "\n":
+                errorsintactico(contador, linea)
             linea = file.readline()
     entry2.config(state="disabled")
+    getErrores(path)
+    obj.imprimirErrores()
+
+def getErrores(path):
+    try:
+        with open(path, "r") as file:
+            lineas = file.read().splitlines()
+            for numero, linea in enumerate(lineas, start=1):
+                for caracter in linea:
+                    if caracter not in CARACTERES:
+                        #print(f"Error sintactico en la linea {numero} y columna {linea.index(caracter) + 1} el caracter es {caracter}")
+                        obj.errores.append(Error(numero, "lexico", caracter, linea.index(caracter) + 1 ))
+    except AttributeError as e:
+        messagebox.showinfo("Error", "Error al buscar arrores lexicos.")
+
+def errorsintactico(fila, caracter ):
+    obj.errores.append(Error(fila, "sintactico", caracter))
+
+
 
 def abrir():
     try:
         global path
         path = filedialog.askopenfile(title="Seleccione el archivo",filetypes=(("bizdata files", ".bizdata"),("all files", ".*")))
-        if messagebox.askquestion("Archivo", f"¿Está seguro que {path.name} es el archivo correcto?") == "yes":
-            path = path.name
-            with open(path, "r") as obj:
-                entry.delete(1.0, tk.END)
-                entry.insert(tk.END, obj.read())
+        path = path.name
+        with open(path, "r") as obj:
+            entry.delete(1.0, tk.END)
+            entry.insert(tk.END, obj.read())
     except:
         messagebox.showerror("Error", "Error al abrir el archivo o se cerro la ventana, intentelo de nuevo")
 
@@ -173,6 +216,7 @@ def ejecutar_funcion(event):
     seleccion = combobx.get()
     if seleccion == "Abrir":
         abrir()
+        button.config(state="normal")
     elif seleccion == "Guardar":
         pass
     elif seleccion == "Guardar como":
@@ -194,7 +238,7 @@ root.geometry("{}x{}+{}+{}".format(WIDTH, HEIGHT,ancho_pantalla, alto_pantalla))
 
 # Colorea el fondo de la ventana
 label_fondo = tk.Label(root, background="#343541")
-label_fondo.place(x=0, y=0, width=900, height=37)
+label_fondo.place(x=0, y=0, width=WIDTH, height=37)
 
 # Crearcion de estilo para los combobox
 style= ttk.Style()
@@ -215,14 +259,14 @@ combobx.place(x=10, y=7, width=100, height=23)
 combobx.bind("<<ComboboxSelected>>", ejecutar_funcion)
 
 # Creacion de los botones
-button = tk.Button(root, text="Analizar", bg="#333766", fg="white", borderwidth=0.5, command= lambda: Leer(path))
-button2 = tk.Button(root, text="Errores", bg= "#333766", fg="white", borderwidth=0.5)
-button3 = tk.Button(root, text="Reporte", bg="#333766", fg="white", borderwidth=0.5)
+button = tk.Button(root, text="Analizar", bg="#333766", fg="white", borderwidth=0.5, state="disabled" , command= lambda: Leer(path))
+#button2 = tk.Button(root, text="Errores", bg= "#333766", fg="white", borderwidth=0.5)
+#button3 = tk.Button(root, text="Reporte", bg="#333766", fg="white", borderwidth=0.5)
 
 # Posicion de los botones
 button.place(x=140, y=7, width=100, height=23)
-button2.place(x=270, y=7, width=100, height=23, )
-button3.place(x=400, y=7, width=100, height=23)
+#button2.place(x=270, y=7, width=100, height=23, )
+#button3.place(x=400, y=7, width=100, height=23)
 
 # Creacion del tetxbox
 entry = tk.Text(root, bg="#343541", fg="white")
