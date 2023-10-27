@@ -3,6 +3,7 @@ class Objeto():
         self.claves = []
         self.registros = []
         self.errores = []
+        self.tokens = []
     
     def iniciliza(self):
         self.claves = []
@@ -120,7 +121,7 @@ class Objeto():
                 file.write("<head>\n")
                 file.write('\t<meta charset="UTF-8">\n')
                 file.write('\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n')
-                file.write("\t<title>Reporte</title>\n")
+                file.write("\t<title>Reporte de errores</title>\n")
                 file.write("<style> .center-table { margin: 0 auto; width: 70%; } </style>")
                 file.write("</head>\n")
                 file.write("<body>\n")
@@ -143,6 +144,43 @@ class Objeto():
                     file.write(f"\t\t\t<th>{valor.fila}</th>\n")
                     file.write(f"\t\t\t<th>{valor.columna}</th>\n")
                     file.write("\t\t</tr>\n")
+                    contador += 1
                 file.write("\t</table>\n")
                 file.write("</body>\n")
                 file.write("</html>\n")
+    
+    def imprimirTokens(self):
+        contador = 1
+        with open("app\\reporteTokens.html", "w") as file:
+            file.write("<!DOCTYPE html>\n")
+            file.write('<html lang="en">\n')
+            file.write("<head>\n")
+            file.write('\t<meta charset="UTF-8">\n')
+            file.write('\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n')
+            file.write("\t<title>Reporte de tokens</title>\n")
+            file.write("<style> .center-table { margin: 0 auto; width: 70%; } </style>")
+            file.write("</head>\n")
+            file.write("<body>\n")
+            file.write('\t<table class="center-table" border="1">\n')
+            file.write("\t\t<tr>\n")
+            file.write(f'\t\t\t<th colspan="{5}" > Reporte de tokens </th>\n')
+            file.write("\t\t</tr>\n")
+            file.write("\t\t<tr>\n")
+            file.write(f"\t\t\t<th>No.</th>\n")
+            file.write(f"\t\t\t<th>Tipo</th>\n")
+            file.write(f"\t\t\t<th>Caracter/Lexema</th>\n")
+            file.write(f"\t\t\t<th>Fila</th>\n")
+            file.write(f"\t\t\t<th>Columna</th>\n")
+            file.write("\t\t</tr>\n")
+            for valor in self.tokens:
+                file.write("\t\t<tr>\n")
+                file.write(f"\t\t\t<th>{contador}</th>\n")
+                file.write(f"\t\t\t<th>{valor.tipo}</th>\n")
+                file.write(f"\t\t\t<th>{valor.lexema}</th>\n")
+                file.write(f"\t\t\t<th>{valor.fila}</th>\n")
+                file.write(f"\t\t\t<th>{valor.columna}</th>\n")
+                file.write("\t\t</tr>\n")
+                contador += 1
+            file.write("\t</table>\n")
+            file.write("</body>\n")
+            file.write("</html>\n")
